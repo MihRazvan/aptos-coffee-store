@@ -16,6 +16,7 @@ module coffee_shop::coffee_shop {
     const ERROR_COFFEE_DOES_NOT_EXIST: u64 = 1;
     const ERROR_NOT_SHOP_OWNER: u64 = 2;
     const ERROR_INSUFFICIENT_STOCK: u64 = 3;
+    const ERROR_INSUFFICIENT_FUNDS: u64 = 4;
 
     // Event emit struct and store
     struct OrderEvent has drop, store {
@@ -41,6 +42,7 @@ module coffee_shop::coffee_shop {
     struct CoffeeShop has key {
         coffees: vector<Coffee>,
         owner: address,
+        funds: u64,
         coffee_counter: u64,
     }
 
@@ -57,6 +59,7 @@ module coffee_shop::coffee_shop {
         let shop = CoffeeShop {
             coffees: vector::empty<Coffee>(),
             owner: owner_addr,
+            funds: 0,
             coffee_counter: 0,
         };
 
@@ -143,6 +146,9 @@ module coffee_shop::coffee_shop {
         // Transfer APT from buyer to shop owner
         coin::transfer<AptosCoin>(buyer, shop_addr, coffee_price);
 
+        // Update shop funds
+        shop.funds = shop.funds + coffee_price;
+
         // Emit order event
         let event_store = borrow_global_mut<EventStore>(shop_addr);
         event::emit_event(&mut event_store.order_events, OrderEvent {
@@ -221,6 +227,33 @@ module coffee_shop::coffee_shop {
 
         let shop = borrow_global<CoffeeShop>(shop_addr);
         shop.coffees
+    }
+
+    // View function to get shop funds
+    #[view]
+    public fun get_shop_funds(shop_addr: address): u64 acquires CoffeeShop {
+        assert!(exists<CoffeeShop>(shop_addr), error::not_found(ERROR_SHOP_DOES_NOT_EXIST));
+
+        let shop = borrow_global<CoffeeShop>(shop_addr);
+        shop.funds
+    }
+
+    // Add function to withdraw funds from the shop
+    public entry fun withdraw_funds(
+        owner: &signer,
+        amount: u64
+    ) acquires CoffeeShop {
+        let owner_addr = signer::address_of(owner);
+
+        // Check if the shop exists and is owned by the signer
+        assert!(exists<CoffeeShop>(owner_addr), error::not_found(ERROR_SHOP_DOES_NOT_EXIST));
+
+        let shop = borrow_global_mut<CoffeeShop>(owner_addr);
+        assert!(shop.owner == owner_addr, error::permission_denied(ERROR_NOT_SHOP_OWNER));
+        assert!(shop.funds >= amount, error::invalid_state(ERROR_INSUFFICIENT_FUNDS));
+
+        // Update shop funds
+        shop.funds = shop.funds - amount;
     }
 
     // Public getter functions for Coffee fields

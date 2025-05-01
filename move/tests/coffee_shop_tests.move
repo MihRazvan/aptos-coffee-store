@@ -110,6 +110,62 @@ module coffee_shop::coffee_shop_tests {
         coin::destroy_mint_cap(mint_cap);
     }
 
+    #[test(aptos_framework = @0x1, shop_owner = @0x42, buyer = @0x43)]
+    public fun test_track_and_withdraw_funds(
+        aptos_framework: &signer,
+        shop_owner: &signer,
+        buyer: &signer
+    ) {
+        // Set up timestamp for testing
+        timestamp::set_time_has_started_for_testing(aptos_framework);
+
+        // Set up AptosCoin for testing
+        let (burn_cap, mint_cap) = aptos_coin::initialize_for_test(aptos_framework);
+
+        // Create accounts and register with AptosCoin
+        let owner_addr = signer::address_of(shop_owner);
+        let buyer_addr = signer::address_of(buyer);
+
+        account::create_account_for_test(owner_addr);
+        account::create_account_for_test(buyer_addr);
+
+        coin::register<AptosCoin>(shop_owner);
+        coin::register<AptosCoin>(buyer);
+
+        // Mint some coins for the buyer
+        let coins = coin::mint<AptosCoin>(1000, &mint_cap);
+        coin::deposit(buyer_addr, coins);
+
+        // Initialize coffee shop
+        coffee_shop::initialize_shop(shop_owner);
+
+        // Add a coffee
+        coffee_shop::add_coffee(
+            shop_owner,
+            string::utf8(b"Espresso"),
+            250, // 2.50 APT
+            10
+        );
+
+        // Buy the coffee
+        coffee_shop::buy_coffee(buyer, owner_addr, 1);
+
+        // Check that funds were tracked
+        let shop_funds = coffee_shop::get_shop_funds(owner_addr);
+        assert!(shop_funds == 250, 0);
+
+        // Withdraw funds
+        coffee_shop::withdraw_funds(shop_owner, 100);
+
+        // Check that funds were decreased
+        let shop_funds_after_withdrawal = coffee_shop::get_shop_funds(owner_addr);
+        assert!(shop_funds_after_withdrawal == 150, 0);
+
+        // Clean up test resources
+        coin::destroy_burn_cap(burn_cap);
+        coin::destroy_mint_cap(mint_cap);
+    }
+
     #[test(shop_owner = @0x42)]
     public fun test_update_coffee_price_and_stock(shop_owner: &signer) {
         // Create test account
