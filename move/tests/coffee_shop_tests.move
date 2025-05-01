@@ -109,4 +109,34 @@ module coffee_shop::coffee_shop_tests {
         coin::destroy_burn_cap(burn_cap);
         coin::destroy_mint_cap(mint_cap);
     }
+
+    #[test(shop_owner = @0x42)]
+    public fun test_update_coffee_price_and_stock(shop_owner: &signer) {
+        // Create test account
+        let owner_addr = signer::address_of(shop_owner);
+        account::create_account_for_test(owner_addr);
+
+        // Initialize coffee shop
+        coffee_shop::initialize_shop(shop_owner);
+
+        // Add a coffee
+        coffee_shop::add_coffee(
+            shop_owner,
+            string::utf8(b"Espresso"),
+            250, // 2.50 APT
+            10
+        );
+
+        // Update coffee price
+        coffee_shop::update_coffee_price(shop_owner, 1, 300);
+
+        // Update coffee stock
+        coffee_shop::update_coffee_stock(shop_owner, 1, 15);
+
+        // Verify updates
+        let coffees = coffee_shop::get_coffees(owner_addr);
+        let coffee = vector::borrow(&coffees, 0);
+        assert!(coffee_shop::get_coffee_price(coffee) == 300, 0); // Price updated from 250 to 300
+        assert!(coffee_shop::get_coffee_stock(coffee) == 15, 0);  // Stock updated from 10 to 15
+    }
 }

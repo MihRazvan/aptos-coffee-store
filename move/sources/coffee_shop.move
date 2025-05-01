@@ -154,6 +154,66 @@ module coffee_shop::coffee_shop {
         });
     }
 
+    // Update coffee price
+    public entry fun update_coffee_price(
+        owner: &signer,
+        coffee_id: u64,
+        new_price: u64
+    ) acquires CoffeeShop {
+        let owner_addr = signer::address_of(owner);
+
+        // Check if the shop exists and is owned by the signer
+        assert!(exists<CoffeeShop>(owner_addr), error::not_found(ERROR_SHOP_DOES_NOT_EXIST));
+
+        let shop = borrow_global_mut<CoffeeShop>(owner_addr);
+        assert!(shop.owner == owner_addr, error::permission_denied(ERROR_NOT_SHOP_OWNER));
+
+        // Find and update the coffee
+        let len = vector::length(&shop.coffees);
+        let i = 0;
+        while (i < len) {
+            let coffee = &mut shop.coffees[i];
+            if (coffee.id == coffee_id) {
+                coffee.price = new_price;
+                return
+            };
+            i = i + 1;
+        };
+
+        // Coffee not found
+        abort error::not_found(ERROR_COFFEE_DOES_NOT_EXIST)
+    }
+
+    // Update coffee stock
+    public entry fun update_coffee_stock(
+        owner: &signer,
+        coffee_id: u64,
+        new_stock: u64
+    ) acquires CoffeeShop {
+        let owner_addr = signer::address_of(owner);
+
+        // Check if the shop exists and is owned by the signer
+        assert!(exists<CoffeeShop>(owner_addr), error::not_found(ERROR_SHOP_DOES_NOT_EXIST));
+
+        let shop = borrow_global_mut<CoffeeShop>(owner_addr);
+        assert!(shop.owner == owner_addr, error::permission_denied(ERROR_NOT_SHOP_OWNER));
+
+        // Find and update the coffee
+        let len = vector::length(&shop.coffees);
+        let i = 0;
+        while (i < len) {
+            let coffee = &mut shop.coffees[i];
+            if (coffee.id == coffee_id) {
+                coffee.stock = new_stock;
+                return
+            };
+            i = i + 1;
+        };
+
+        // Coffee not found
+        abort error::not_found(ERROR_COFFEE_DOES_NOT_EXIST)
+    }
+
     // View function to get all coffees in a shop
     #[view]
     public fun get_coffees(shop_addr: address): vector<Coffee> acquires CoffeeShop {
