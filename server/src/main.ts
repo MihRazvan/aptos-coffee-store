@@ -1,4 +1,3 @@
-// server/src/main.ts
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 
@@ -11,6 +10,10 @@ async function bootstrap() {
   // Set global prefix
   app.setGlobalPrefix('api');
 
-  await app.listen(3001);
+  // Get port from environment variable or use fallback
+  const port = process.env.PORT || 3001;
+
+  await app.listen(port);
+  console.log(`Application is running on: ${await app.getUrl()}`);
 }
 bootstrap();
