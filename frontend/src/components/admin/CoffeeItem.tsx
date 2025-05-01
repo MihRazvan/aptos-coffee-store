@@ -58,12 +58,14 @@ export default function CoffeeItem({ id, name, price, stock, image, available }:
                 <div className="flex items-center">
                     <div className="flex-shrink-0 h-10 w-10 relative">
                         {image ? (
-                            <Image
-                                src={`/images/${image}`}
-                                alt={name}
-                                fill
-                                className="object-cover rounded-full"
-                            />
+                            <div className="h-10 w-10 relative">
+                                <Image
+                                    src={`/images/${image}`}
+                                    alt={name}
+                                    fill
+                                    className="object-cover rounded-full"
+                                />
+                            </div>
                         ) : (
                             <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
                                 ☕

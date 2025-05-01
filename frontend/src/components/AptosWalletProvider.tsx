@@ -1,24 +1,17 @@
 'use client';
 
 import { ReactNode, useEffect } from 'react';
-import {
-    AptosWalletAdapterProvider,
-    useWallet
-} from '@aptos-labs/wallet-adapter-react';
-import { Types } from 'aptos';
-
-// Import wallet adapters (these are created automatically based on the TS SDK)
-import { PetraWallet } from "@aptos-labs/wallet-adapter-react";
+import { AptosWalletAdapterProvider, useWallet } from '@aptos-labs/wallet-adapter-react';
+import { PetraWallet } from "@aptos-labs/wallet-adapter-petra";
+import { NetworkName } from '@aptos-labs/ts-sdk';
 
 interface AptosWalletProviderProps {
     children: ReactNode;
 }
 
 export function AptosWalletProvider({ children }: AptosWalletProviderProps) {
-    // Set up wallets that will be available to connect
-    const wallets = [
-        new PetraWallet()
-    ];
+    // Initialize the wallets explicitly
+    const wallets = [new PetraWallet()];
 
     return (
         <AptosWalletAdapterProvider

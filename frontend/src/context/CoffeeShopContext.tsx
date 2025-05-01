@@ -2,14 +2,15 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Aptos, AptosConfig, Network, Types } from '@aptos-labs/ts-sdk';
+import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
 // Configure Aptos client
+const networkName = (process.env.NEXT_PUBLIC_APTOS_NETWORK || 'devnet') as Network;
 const aptosConfig = new AptosConfig({
-    network: Network.DEVNET,
-    fullnodeUrl: process.env.NEXT_PUBLIC_APTOS_NODE_URL
+    network: networkName,
+    fullnode: process.env.NEXT_PUBLIC_APTOS_NODE_URL
 });
 const aptosClient = new Aptos(aptosConfig);
 
@@ -110,16 +111,12 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
             console.log("Order created:", newOrder);
 
             // 2. Execute blockchain transaction
-            const payload: Types.TransactionPayload = {
-                function: `${moduleAddress}::coffee_shop::buy_coffee`,
-                type_arguments: [],
-                arguments: [account.address, coffeeId]
-            };
-
-            console.log("Submitting transaction with payload:", payload);
             const response = await signAndSubmitTransaction({
                 sender: account.address,
-                data: payload
+                data: {
+                    function: `${moduleAddress}::coffee_shop::buy_coffee`,
+                    functionArguments: [account.address, coffeeId]
+                }
             });
 
             console.log("Transaction submitted:", response);

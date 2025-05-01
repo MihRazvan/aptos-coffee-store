@@ -3,6 +3,7 @@
 import Header from "@/components/Header";
 import AdminDashboard from "@/components/admin/AdminDashboard";
 import { AdminProvider } from "@/context/AdminContext";
+import { Toaster } from "react-hot-toast";
 
 export default function AdminPage() {
     return (

@@ -22,7 +22,11 @@ const nextConfig = {
         ],
       },
     ];
-  }
+  },
+  // Configure images
+  images: {
+    domains: ['aptos-coffee-shop-api.onrender.com'],
+  },
 };
 
 module.exports = nextConfig;

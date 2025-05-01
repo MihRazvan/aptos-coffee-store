@@ -1,5 +1,5 @@
 // src/components/admin/WithdrawFunds.tsx
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import toast from 'react-hot-toast';
@@ -11,6 +11,11 @@ export default function WithdrawFunds() {
     const [amount, setAmount] = useState<number>(0);
     const [shopFunds, setShopFunds] = useState<number | null>(null);
 
+    // Fetch shop funds when account changes
+    useEffect(() => {
+        fetchShopFunds();
+    }, [account?.address]);
+
     // Fetch shop funds when component mounts
     const fetchShopFunds = async () => {
         try {
@@ -21,7 +26,7 @@ export default function WithdrawFunds() {
                 `${apiUrl}/shop-funds?address=${account.address}`
             );
 
-            if (response.data && response.data.funds) {
+            if (response.data && response.data.funds !== undefined) {
                 setShopFunds(response.data.funds);
             }
         } catch (error) {

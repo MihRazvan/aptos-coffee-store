@@ -3,7 +3,6 @@
 import Header from "@/components/Header";
 import CoffeeShop from "@/components/CoffeeShop";
 import { CoffeeShopProvider } from "@/context/CoffeeShopContext";
-import { Toaster } from "react-hot-toast";
 
 export default function Home() {
   return (
@@ -16,7 +15,6 @@ export default function Home() {
         <footer className="py-6 bg-blue-600 text-white text-center">
           <p>© {new Date().getFullYear()} Aptos Coffee Shop. All rights reserved.</p>
         </footer>
-        <Toaster position="top-right" />
       </div>
     </CoffeeShopProvider>
   );

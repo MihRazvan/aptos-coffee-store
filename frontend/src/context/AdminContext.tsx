@@ -1,7 +1,7 @@
-// src/context/AdminContext.tsx
+'use client';
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Types } from 'aptos';
 import axios from 'axios';
 
 interface Coffee {
@@ -64,14 +64,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             await axios.patch(`${apiUrl}/coffees/${id}`, { price });
 
             // 2. Update in blockchain
-            const payload: Types.TransactionPayload = {
-                type: "entry_function_payload",
-                function: `${moduleAddress}::coffee_shop::update_coffee_price`,
-                type_arguments: [],
-                arguments: [id, price]
-            };
-
-            await signAndSubmitTransaction(payload);
+            const response = await signAndSubmitTransaction({
+                sender: account.address,
+                data: {
+                    function: `${moduleAddress}::coffee_shop::update_coffee_price`,
+                    functionArguments: [id, price]
+                }
+            });
 
             // 3. Refresh coffees list
             await fetchCoffees();
@@ -98,14 +97,13 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             await axios.patch(`${apiUrl}/coffees/${id}/stock`, { stock });
 
             // 2. Update in blockchain
-            const payload: Types.TransactionPayload = {
-                type: "entry_function_payload",
-                function: `${moduleAddress}::coffee_shop::update_coffee_stock`,
-                type_arguments: [],
-                arguments: [id, stock]
-            };
-
-            await signAndSubmitTransaction(payload);
+            const response = await signAndSubmitTransaction({
+                sender: account.address,
+                data: {
+                    function: `${moduleAddress}::coffee_shop::update_coffee_stock`,
+                    functionArguments: [id, stock]
+                }
+            });
 
             // 3. Refresh coffees list
             await fetchCoffees();
@@ -144,14 +142,14 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         setError(null);
 
         try {
-            const payload: Types.TransactionPayload = {
-                type: "entry_function_payload",
-                function: `${moduleAddress}::coffee_shop::withdraw_funds`,
-                type_arguments: [],
-                arguments: [amount]
-            };
+            const response = await signAndSubmitTransaction({
+                sender: account.address,
+                data: {
+                    function: `${moduleAddress}::coffee_shop::withdraw_funds`,
+                    functionArguments: [amount]
+                }
+            });
 
-            await signAndSubmitTransaction(payload);
             return true;
         } catch (err: any) {
             setError(err.message || 'Failed to withdraw funds');
@@ -163,8 +161,10 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     };
 
     useEffect(() => {
-        fetchCoffees();
-    }, []);
+        if (account?.address) {
+            fetchCoffees();
+        }
+    }, [account?.address]);
 
     const value = {
         coffees,

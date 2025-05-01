@@ -26,7 +26,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
         }
 
         if (stock <= 0) {
-            toast.error('Sorry, this coffee is out of stock');
+            toast.error('Sorry, this item is out of stock');
             return;
         }
 
@@ -38,7 +38,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
             }
         } catch (error) {
             console.error('Purchase failed:', error);
-            toast.error('Failed to purchase coffee');
+            toast.error('Failed to purchase item');
         } finally {
             setIsPurchasing(false);
         }
@@ -67,10 +67,10 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                         onClick={handlePurchase}
                         disabled={isPurchasing || isLoading || stock <= 0}
                         className={`py-1 px-2 rounded font-semibold ${stock <= 0
-                                ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                                : isPurchasing || isLoading
-                                    ? 'bg-green-400 cursor-wait'
-                                    : 'bg-green-500 hover:bg-green-600 text-white'
+                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
+                            : isPurchasing || isLoading
+                                ? 'bg-green-400 cursor-wait'
+                                : 'bg-green-500 hover:bg-green-600 text-white'
                             }`}
                     >
                         BUY
