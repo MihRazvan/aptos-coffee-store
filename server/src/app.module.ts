@@ -15,18 +15,34 @@ import { OrdersModule } from './orders/orders.module';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get('DATABASE_HOST') || 'localhost',
-        port: parseInt(configService.get('DATABASE_PORT') || '5432'),
-        username: configService.get('DATABASE_USERNAME') || 'postgres',
-        password: configService.get('DATABASE_PASSWORD') || 'postgres',
-        database: configService.get('DATABASE_NAME') || 'aptos_coffee_shop',
-        entities: [__dirname + '/**/*.entity{.ts,.js}'],
-        synchronize: true, // Note: set to false in production
-        logging: ['error'], // Only log errors for cleaner output
-        autoLoadEntities: true,
-      }),
+      useFactory: (configService: ConfigService) => {
+        const databaseUrl = configService.get('DATABASE_URL');
+
+        if (databaseUrl) {
+          // For Render deployment
+          return {
+            type: 'postgres',
+            url: databaseUrl,
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: true,
+            ssl: {
+              rejectUnauthorized: false, // Needed for Render PostgreSQL
+            },
+          };
+        } else {
+          // For local development
+          return {
+            type: 'postgres',
+            host: configService.get('DATABASE_HOST') || 'localhost',
+            port: parseInt(configService.get('DATABASE_PORT') || '5432'),
+            username: configService.get('DATABASE_USERNAME') || 'postgres',
+            password: configService.get('DATABASE_PASSWORD') || 'postgres',
+            database: configService.get('DATABASE_NAME') || 'aptos_coffee_shop',
+            entities: [__dirname + '/**/*.entity{.ts,.js}'],
+            synchronize: true,
+          };
+        }
+      },
     }),
     CoffeesModule,
     OrdersModule,
