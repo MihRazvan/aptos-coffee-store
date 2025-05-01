@@ -1,9 +1,11 @@
+// src/components/CoffeeCard.tsx
 'use client';
 
 import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useCoffeeShop } from '@/context/CoffeeShopContext';
 import toast from 'react-hot-toast';
+import Image from 'next/image';
 
 interface CoffeeCardProps {
     id: number;
@@ -54,7 +56,17 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                         </div>
                     ) : (
                         <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-yellow-500 text-4xl">🪙</div>
+                            {image ? (
+                                <Image
+                                    src={`/images/${image}`}
+                                    alt={name}
+                                    width={80}
+                                    height={80}
+                                    className="object-contain"
+                                />
+                            ) : (
+                                <div className="text-yellow-500 text-4xl">🪙</div>
+                            )}
                         </div>
                     )}
                 </div>
@@ -62,7 +74,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                 <div className="text-3xl font-bold mb-2 text-center">550</div>
 
                 <div className="w-full flex justify-between items-center bg-blue-500 text-white rounded px-2 py-1">
-                    <span className="font-bold text-lg">$14</span>
+                    <span className="font-bold text-lg">${(price / 100).toFixed(2)}</span>
                     <button
                         onClick={handlePurchase}
                         disabled={isPurchasing || isLoading || stock <= 0}

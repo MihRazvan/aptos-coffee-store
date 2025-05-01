@@ -17,6 +17,7 @@ export default function AdminPage() {
             <footer className="py-6 bg-blue-600 text-white text-center">
                 <p>© {new Date().getFullYear()} Aptos Coffee Shop. All rights reserved.</p>
             </footer>
+            <Toaster position="top-right" />
         </div>
     );
 }

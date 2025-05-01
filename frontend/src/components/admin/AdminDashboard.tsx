@@ -2,8 +2,6 @@
 import { useEffect } from 'react';
 import { useAdmin } from '@/context/AdminContext';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import CoffeeItem from './CoffeeItem';
-import WithdrawFunds from './WithdrawFunds';
 
 export default function AdminDashboard() {
     const { coffees, isLoading, error, fetchCoffees } = useAdmin();
@@ -49,68 +47,27 @@ export default function AdminDashboard() {
 
     return (
         <div className="py-8">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="sm:flex sm:items-center sm:justify-between">
-                    <div>
-                        <h2 className="text-2xl font-bold text-gray-900">Admin Dashboard</h2>
-                        <p className="mt-1 text-sm text-gray-500">
-                            Manage your coffee shop items and withdraw funds
-                        </p>
-                    </div>
-                    <div className="mt-4 sm:mt-0">
-                        <span className="px-4 py-2 rounded-full bg-green-100 text-green-800">
-                            Connected: {account?.address.slice(0, 6)}...{account?.address.slice(-4)}
-                        </span>
-                    </div>
-                </div>
+            <div className="max-w-4xl mx-auto">
+                <h2 className="text-2xl font-bold mb-6">Admin Dashboard</h2>
+                <p className="mb-6">
+                    Connected: {account?.address.toString().slice(0, 6)}...{account?.address.toString().slice(-4)}
+                </p>
 
-                <WithdrawFunds />
-
-                <div className="mt-8">
-                    <h3 className="text-lg font-medium text-gray-900 mb-4">Manage Coffees</h3>
-
-                    <div className="flex flex-col">
-                        <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-                            <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-                                <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
-                                    <table className="min-w-full divide-y divide-gray-200">
-                                        <thead className="bg-gray-50">
-                                            <tr>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Coffee
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Price
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Stock
-                                                </th>
-                                                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                    Status
-                                                </th>
-                                                <th scope="col" className="relative px-6 py-3">
-                                                    <span className="sr-only">Edit</span>
-                                                </th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-gray-200">
-                                            {coffees.map((coffee) => (
-                                                <CoffeeItem
-                                                    key={coffee.id}
-                                                    id={coffee.id}
-                                                    name={coffee.name}
-                                                    price={coffee.price}
-                                                    stock={coffee.stock}
-                                                    image={coffee.image}
-                                                    available={coffee.available}
-                                                />
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
+                <h3 className="text-xl font-semibold mb-4">Manage Coffees</h3>
+                <div className="space-y-4">
+                    {coffees.map((coffee) => (
+                        <div key={coffee.id} className="flex items-center justify-between bg-white p-4 rounded-md shadow-sm">
+                            <div>
+                                <p className="font-bold">{coffee.name}</p>
+                                <p>${(coffee.price / 100).toFixed(2)} - Stock: {coffee.stock}</p>
+                            </div>
+                            <div>
+                                <button className="bg-blue-500 text-white px-3 py-1 rounded text-sm mr-2">
+                                    Edit
+                                </button>
                             </div>
                         </div>
-                    </div>
+                    ))}
                 </div>
             </div>
         </div>
