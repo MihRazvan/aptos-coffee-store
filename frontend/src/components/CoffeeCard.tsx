@@ -1,4 +1,3 @@
-// src/components/CoffeeCard.tsx
 'use client';
 
 import { useState } from 'react';
@@ -26,20 +25,15 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
             toast.error('Please connect your wallet first');
             return;
         }
-
         if (stock <= 0) {
             toast.error('Sorry, this item is out of stock');
             return;
         }
-
         setIsPurchasing(true);
         try {
-            const order = await purchaseCoffee(id, price);
-            if (order) {
-                toast.success(`Successfully purchased ${name}!`);
-            }
+            await purchaseCoffee(id, price);
+            toast.success(`Successfully purchased ${name}!`);
         } catch (error) {
-            console.error('Purchase failed:', error);
             toast.error('Failed to purchase item');
         } finally {
             setIsPurchasing(false);
@@ -70,9 +64,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                         </div>
                     )}
                 </div>
-
                 <div className="text-3xl font-bold mb-2 text-center">550</div>
-
                 <div className="w-full flex justify-between items-center bg-blue-500 text-white rounded px-2 py-1">
                     <span className="font-bold text-lg">${(price / 100).toFixed(2)}</span>
                     <button

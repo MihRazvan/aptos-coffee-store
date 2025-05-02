@@ -41,7 +41,7 @@ interface CoffeeShopContextType {
     error: string | null;
     fetchCoffees: () => Promise<void>;
     fetchOrders: () => Promise<void>;
-    purchaseCoffee: (coffeeId: number, price: number) => Promise<Order | null>;
+    purchaseCoffee: (coffeeId: number, price: number) => Promise<void>;
 }
 
 // Create the context
@@ -90,53 +90,44 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    const purchaseCoffee = async (coffeeId: number, price: number): Promise<Order | null> => {
-        if (!account?.address) {
-            toast.error('Please connect your wallet');
-            return null;
-        }
+    const purchaseCoffee = async (coffeeId: number, price: number) => {
+        if (!account?.address) throw new Error("Wallet not connected");
 
         setIsLoading(true);
         setError(null);
-
         try {
-            // 1. Create an order in the backend
-            const orderResponse = await axios.post(`${apiUrl}/orders`, {
+            // 1. Create order in backend
+            const { data: order } = await axios.post(`${apiUrl}/orders`, {
                 coffeeId,
                 price,
-                buyerAddress: account.address,
+                buyerAddress: account.address.toString(),
             });
 
-            const newOrder = orderResponse.data;
-            console.log("Order created:", newOrder);
+            // 2. Build transaction payload for Move contract
+            const payload = {
+                type: "entry_function_payload",
+                function: `${moduleAddress}::coffee_shop::buy_coffee`,
+                type_arguments: [],
+                arguments: [coffeeId, price],
+            };
 
-            // 2. Execute blockchain transaction
-            const response = await signAndSubmitTransaction({
+            // 3. Sign and submit transaction
+            const txResult = await signAndSubmitTransaction({
                 sender: account.address,
-                data: {
-                    function: `${moduleAddress}::coffee_shop::buy_coffee`,
-                    functionArguments: [account.address, coffeeId]
-                }
+                data: payload,
             });
 
-            console.log("Transaction submitted:", response);
-
-            // 3. Update order with transaction hash
-            await axios.patch(`${apiUrl}/orders/${newOrder.id}/transaction`, {
-                transactionHash: response.hash,
+            // 4. Notify backend of transaction hash
+            await axios.patch(`${apiUrl}/orders/${order.id}/transaction`, {
+                transactionHash: txResult.hash,
             });
 
-            // 4. Refresh orders and coffees
+            // 5. Refresh orders and coffees
             await fetchOrders();
             await fetchCoffees();
-
-            toast.success('Successfully purchased coffee!');
-            return newOrder;
         } catch (err: any) {
-            console.error("Error purchasing coffee:", err);
             setError(err.message || 'Failed to purchase coffee');
-            toast.error('Failed to purchase coffee');
-            return null;
+            throw err;
         } finally {
             setIsLoading(false);
         }
