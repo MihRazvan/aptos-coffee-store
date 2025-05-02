@@ -65,10 +65,11 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
             console.log("Fetching coffees from API:", `${apiUrl}/coffees`);
             const response = await axios.get(`${apiUrl}/coffees`);
             console.log("Coffee data:", response.data);
-            setCoffees(response.data);
+            setCoffees(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
             console.error("Error fetching coffees:", err);
             setError('Failed to fetch coffees');
+            setCoffees([]);
         } finally {
             setIsLoading(false);
         }
@@ -96,37 +97,37 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
         setIsLoading(true);
         setError(null);
         try {
-            // 1. Create order in backend
             const { data: order } = await axios.post(`${apiUrl}/orders`, {
                 coffeeId,
                 price,
                 buyerAddress: account.address.toString(),
             });
+            console.log("Order response:", order);
 
-            // 2. Build transaction payload for Move contract
             const payload = {
                 type: "entry_function_payload",
                 function: `${moduleAddress}::coffee_shop::buy_coffee`,
                 type_arguments: [],
-                arguments: [coffeeId, price],
+                arguments: [moduleAddress, coffeeId],
             };
+            console.log("Transaction payload:", payload);
 
-            // 3. Sign and submit transaction
+            console.log("About to call signAndSubmitTransaction");
             const txResult = await signAndSubmitTransaction({
                 sender: account.address,
                 data: payload,
             });
+            console.log("Transaction result:", txResult);
 
-            // 4. Notify backend of transaction hash
             await axios.patch(`${apiUrl}/orders/${order.id}/transaction`, {
                 transactionHash: txResult.hash,
             });
 
-            // 5. Refresh orders and coffees
             await fetchOrders();
             await fetchCoffees();
         } catch (err: any) {
             setError(err.message || 'Failed to purchase coffee');
+            console.error("Error in purchaseCoffee:", err);
             throw err;
         } finally {
             setIsLoading(false);

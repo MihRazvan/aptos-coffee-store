@@ -3,7 +3,7 @@ name = "CoffeeShop"
 version = "0.0.1"
 
 [addresses]
-coffee_shop = "_" # The underscore will allow the CLI to replace it with your address
+coffee_shop = "0x42d6b2ad3ffcda85c6fd9b70861f56f35fd9a64cb94c16ac6546b37c23a7ff60" # The underscore will allow the CLI to replace it with your address
 
 [dependencies]
 AptosFramework = { git = "https://github.com/aptos-labs/aptos-framework.git", subdir = "aptos-framework", rev = "mainnet" }

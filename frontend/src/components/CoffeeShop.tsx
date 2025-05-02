@@ -41,30 +41,14 @@ export default function CoffeeShop() {
                 <h3 className="text-xl font-bold mb-4">COFFEE MENU</h3>
                 <div className="space-y-4">
                     {coffees.map((coffee) => (
-                        <div key={coffee.id} className="flex items-center gap-4 bg-white p-4 rounded-md shadow-sm">
-                            <div className="w-20 h-20 relative">
-                                <Image
-                                    src={`/images/${coffee.image || 'espresso.png'}`}
-                                    alt={coffee.name}
-                                    width={80}
-                                    height={80}
-                                    className="object-contain"
-                                />
-                            </div>
-                            <div className="flex-1">
-                                <div className="font-bold">550</div>
-                                <div>{coffee.name}</div>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <span className="font-bold">${(coffee.price / 100).toFixed(2)}</span>
-                                <button
-                                    className="bg-green-500 text-white px-2 py-1 rounded text-sm font-bold hover:bg-green-600"
-                                    onClick={() => { }}
-                                >
-                                    BUY
-                                </button>
-                            </div>
-                        </div>
+                        <CoffeeCard
+                            key={coffee.id}
+                            id={coffee.id}
+                            name={coffee.name}
+                            price={coffee.price}
+                            stock={coffee.stock}
+                            image={coffee.image}
+                        />
                     ))}
                 </div>
             </div>

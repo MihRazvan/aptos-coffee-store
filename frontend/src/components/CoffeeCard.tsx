@@ -20,7 +20,8 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
     const { connected } = useWallet();
     const [isPurchasing, setIsPurchasing] = useState(false);
 
-    const handlePurchase = async () => {
+    const handlePurchaseClick = async () => {
+        console.log("BUY button clicked for coffee", id, name);
         if (!connected) {
             toast.error('Please connect your wallet first');
             return;
@@ -35,6 +36,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
             toast.success(`Successfully purchased ${name}!`);
         } catch (error) {
             toast.error('Failed to purchase item');
+            console.error(error);
         } finally {
             setIsPurchasing(false);
         }
@@ -68,7 +70,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                 <div className="w-full flex justify-between items-center bg-blue-500 text-white rounded px-2 py-1">
                     <span className="font-bold text-lg">${(price / 100).toFixed(2)}</span>
                     <button
-                        onClick={handlePurchase}
+                        onClick={handlePurchaseClick}
                         disabled={isPurchasing || isLoading || stock <= 0}
                         className={`py-1 px-2 rounded font-semibold ${stock <= 0
                             ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
