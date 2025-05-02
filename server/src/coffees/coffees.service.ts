@@ -1,17 +1,50 @@
 // coffees/coffees.service.ts
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, OnModuleInit } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Coffee } from './coffee.entity';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
+import { AptosConfig, Network } from '@aptos-labs/ts-sdk';
+
+const STANDARD_COFFEES = [
+    { name: 'Americano', price: 300, stock: 20, image: 'americano.png' },
+    { name: 'Cappuccino', price: 350, stock: 15, image: 'cappuccino.png' },
+    { name: 'Espresso', price: 250, stock: 20, image: 'espresso.png' },
+    { name: 'Latte', price: 400, stock: 15, image: 'latte.png' },
+    { name: 'Mocha', price: 450, stock: 10, image: 'mocha.png' },
+];
+
+const aptosConfig = new AptosConfig({
+    network: process.env.APTOS_NETWORK as Network || Network.TESTNET,
+    fullnode: process.env.APTOS_NODE_URL,
+});
 
 @Injectable()
-export class CoffeesService {
+export class CoffeesService implements OnModuleInit {
     constructor(
         @InjectRepository(Coffee)
         private coffeesRepository: Repository<Coffee>,
     ) { }
+
+    async onModuleInit() {
+        await this.seedStandardCoffees();
+    }
+
+    async seedStandardCoffees() {
+        const existing = await this.coffeesRepository.find();
+        for (const coffee of STANDARD_COFFEES) {
+            if (!existing.find(c => c.name === coffee.name)) {
+                await this.coffeesRepository.save(coffee);
+            }
+        }
+        // Optionally, remove any coffees not in the standard list:
+        // for (const coffee of existing) {
+        //   if (!STANDARD_COFFEES.find(c => c.name === coffee.name)) {
+        //     await this.coffeesRepository.delete(coffee.id);
+        //   }
+        // }
+    }
 
     findAll(): Promise<Coffee[]> {
         return this.coffeesRepository.find({
@@ -55,51 +88,19 @@ export class CoffeesService {
         return updatedCoffee;
     }
 
+    async updatePrice(id: number, price: number): Promise<Coffee> {
+        await this.coffeesRepository.update(id, { price });
+        const updatedCoffee = await this.coffeesRepository.findOne({ where: { id } });
+        if (!updatedCoffee) {
+            throw new NotFoundException(`Coffee with ID ${id} not found`);
+        }
+        return updatedCoffee;
+    }
+
     async remove(id: number): Promise<void> {
         const result = await this.coffeesRepository.delete(id);
         if (result.affected === 0) {
             throw new NotFoundException(`Coffee with ID ${id} not found`);
-        }
-    }
-
-    // Add seed data if the coffee table is empty
-    async seed(): Promise<void> {
-        const count = await this.coffeesRepository.count();
-        if (count === 0) {
-            const coffees = [
-                {
-                    name: 'Espresso',
-                    price: 250, // 2.50 APT
-                    stock: 20,
-                    image: 'espresso.png',
-                },
-                {
-                    name: 'Cappuccino',
-                    price: 350, // 3.50 APT
-                    stock: 15,
-                    image: 'cappuccino.png',
-                },
-                {
-                    name: 'Latte',
-                    price: 400, // 4.00 APT
-                    stock: 15,
-                    image: 'latte.png',
-                },
-                {
-                    name: 'Americano',
-                    price: 300, // 3.00 APT
-                    stock: 25,
-                    image: 'americano.png',
-                },
-                {
-                    name: 'Mocha',
-                    price: 450, // 4.50 APT
-                    stock: 10,
-                    image: 'mocha.png',
-                },
-            ];
-
-            await this.coffeesRepository.save(coffees);
         }
     }
 }

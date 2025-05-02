@@ -12,15 +12,12 @@ import {
 import { CoffeesService } from './coffees.service';
 import { CreateCoffeeDto } from './dto/create-coffee.dto';
 import { UpdateCoffeeDto } from './dto/update-coffee.dto';
+import { Network } from '@aptos-labs/ts-sdk';
+import { AptosConfig } from '@aptos-labs/ts-sdk';
 
 @Controller('coffees')
-export class CoffeesController implements OnModuleInit {
+export class CoffeesController {
     constructor(private readonly coffeesService: CoffeesService) { }
-
-    async onModuleInit() {
-        // Seed the database when the module initializes
-        await this.coffeesService.seed();
-    }
 
     @Get()
     findAll() {
@@ -47,6 +44,11 @@ export class CoffeesController implements OnModuleInit {
         return this.coffeesService.update(+id, updateCoffeeDto);
     }
 
+    @Patch(':id/price')
+    updatePrice(@Param('id') id: string, @Body('price') price: number) {
+        return this.coffeesService.updatePrice(+id, price);
+    }
+
     @Patch(':id/stock')
     updateStock(@Param('id') id: string, @Body('stock') stock: number) {
         return this.coffeesService.updateStock(+id, stock);
@@ -57,3 +59,8 @@ export class CoffeesController implements OnModuleInit {
         return this.coffeesService.remove(+id);
     }
 }
+
+const aptosConfig = new AptosConfig({
+    network: process.env.APTOS_NETWORK as Network || Network.TESTNET,
+    fullnode: process.env.APTOS_NODE_URL,
+});

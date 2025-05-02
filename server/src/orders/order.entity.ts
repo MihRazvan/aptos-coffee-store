@@ -21,6 +21,9 @@ export class Order {
     @Column({ nullable: true })
     transactionHash: string;
 
-    @CreateDateColumn()
+    @Column({ default: 'pending' })
+    status: 'pending' | 'paid' | 'failed';
+
+    @CreateDateColumn({ type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
     createdAt: Date;
 }
