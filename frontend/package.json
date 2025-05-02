@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@aptos-labs/ts-sdk": "1.38.0",
-    "@aptos-labs/wallet-adapter-react": "^5.0.5",
+    "@aptos-labs/wallet-adapter-react": "^6.0.0",
     "axios": "^1.6.7",
     "encoding": "^0.1.13",
     "next": "13.5.6",

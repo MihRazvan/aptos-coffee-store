@@ -2,19 +2,12 @@
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
-import { Aptos, AptosConfig, Network } from '@aptos-labs/ts-sdk';
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-// Configure Aptos client
-const networkName = (process.env.NEXT_PUBLIC_APTOS_NETWORK || 'devnet') as Network;
-const aptosConfig = new AptosConfig({
-    network: networkName,
-    fullnode: process.env.NEXT_PUBLIC_APTOS_NODE_URL
-});
-const aptosClient = new Aptos(aptosConfig);
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS; // Your Petra wallet address as string
 
-// Types
 interface Coffee {
     id: number;
     name: string;
@@ -31,6 +24,7 @@ interface Order {
     price: number;
     buyerAddress: string;
     transactionHash?: string;
+    status: 'pending' | 'paid' | 'failed';
     createdAt: string;
 }
 
@@ -41,33 +35,26 @@ interface CoffeeShopContextType {
     error: string | null;
     fetchCoffees: () => Promise<void>;
     fetchOrders: () => Promise<void>;
-    purchaseCoffee: (coffeeId: number, price: number) => Promise<void>;
+    buyCoffee: (coffee: Coffee) => Promise<void>;
 }
 
-// Create the context
 const CoffeeShopContext = createContext<CoffeeShopContextType | undefined>(undefined);
 
-// Provider component
 export function CoffeeShopProvider({ children }: { children: ReactNode }) {
-    const { account, signAndSubmitTransaction } = useWallet();
+    const { account, signAndSubmitTransaction, connected } = useWallet();
     const [coffees, setCoffees] = useState<Coffee[]>([]);
     const [orders, setOrders] = useState<Order[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const moduleAddress = process.env.NEXT_PUBLIC_MODULE_ADDRESS;
-
     const fetchCoffees = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            console.log("Fetching coffees from API:", `${apiUrl}/coffees`);
-            const response = await axios.get(`${apiUrl}/coffees`);
-            console.log("Coffee data:", response.data);
-            setCoffees(Array.isArray(response.data) ? response.data : []);
+            const { data } = await axios.get(`${apiUrl}/coffees`);
+            console.log("Fetched coffees:", data);
+            setCoffees(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("Error fetching coffees:", err);
             setError('Failed to fetch coffees');
             setCoffees([]);
         } finally {
@@ -77,73 +64,93 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
 
     const fetchOrders = async () => {
         if (!account?.address) return;
-
         setIsLoading(true);
         setError(null);
         try {
-            const response = await axios.get(`${apiUrl}/orders/buyer?address=${account.address}`);
-            setOrders(response.data);
+            const { data } = await axios.get(`${apiUrl}/orders/buyer`, {
+                params: { address: account.address.toString() },
+            });
+            console.log("Fetched orders:", data);
+            setOrders(Array.isArray(data) ? data : []);
         } catch (err) {
-            console.error("Error fetching orders:", err);
             setError('Failed to fetch orders');
+            setOrders([]);
         } finally {
             setIsLoading(false);
         }
     };
 
-    const purchaseCoffee = async (coffeeId: number, price: number) => {
-        if (!account?.address) throw new Error("Wallet not connected");
-
+    // The new buy flow
+    const buyCoffee = async (coffee: Coffee) => {
+        console.log("buyCoffee called with", coffee);
+        if (!connected || !account?.address) {
+            console.log("Not connected or no account");
+            toast.error('Please connect your wallet first');
+            return;
+        }
+        if (!adminAddress) {
+            console.log("Admin address missing");
+            toast.error('Admin address is not set!');
+            return;
+        }
+        if (typeof coffee.price !== 'number') {
+            console.log("Invalid coffee price");
+            toast.error('Coffee price is invalid!');
+            return;
+        }
+        if (coffee.stock <= 0) {
+            console.log("Out of stock");
+            toast.error('Sorry, this item is out of stock');
+            return;
+        }
         setIsLoading(true);
         setError(null);
         try {
+            console.log("Posting order to backend...");
+            // 1. Create order in backend
             const { data: order } = await axios.post(`${apiUrl}/orders`, {
-                coffeeId,
-                price,
+                coffeeId: coffee.id,
+                price: coffee.price,
                 buyerAddress: account.address.toString(),
             });
-            console.log("Order response:", order);
 
+            // 2. Prompt wallet to transfer APT to admin
             const payload = {
                 type: "entry_function_payload",
-                function: `${moduleAddress}::coffee_shop::buy_coffee`,
-                type_arguments: [],
-                arguments: [moduleAddress, coffeeId],
+                function: "0x1::coin::transfer",
+                type_arguments: ["0x1::aptos_coin::AptosCoin"],
+                arguments: [adminAddress, coffee.price.toString()],
             };
-            console.log("Transaction payload:", payload);
 
-            console.log("About to call signAndSubmitTransaction");
-            const txResult = await signAndSubmitTransaction({
-                sender: account.address,
-                data: payload,
-            });
-            console.log("Transaction result:", txResult);
+            console.log("Payload to signAndSubmitTransaction:", payload);
 
+            console.log("signAndSubmitTransaction:", signAndSubmitTransaction);
+
+            const txResult = await signAndSubmitTransaction(payload);
+
+            // 3. PATCH order with transaction hash
             await axios.patch(`${apiUrl}/orders/${order.id}/transaction`, {
                 transactionHash: txResult.hash,
             });
 
+            toast.success(`Successfully purchased ${coffee.name}!`);
             await fetchOrders();
             await fetchCoffees();
         } catch (err: any) {
             setError(err.message || 'Failed to purchase coffee');
-            console.error("Error in purchaseCoffee:", err);
-            throw err;
+            toast.error('Failed to purchase coffee');
+            console.error(err);
         } finally {
             setIsLoading(false);
         }
     };
 
-    // Fetch coffees on initial load
     useEffect(() => {
         fetchCoffees();
-    }, []);
-
-    // Fetch orders when account changes
-    useEffect(() => {
         if (account?.address) {
             fetchOrders();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [account?.address]);
 
     const value = {
@@ -153,13 +160,12 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
         error,
         fetchCoffees,
         fetchOrders,
-        purchaseCoffee,
+        buyCoffee,
     };
 
     return <CoffeeShopContext.Provider value={value}>{children}</CoffeeShopContext.Provider>;
 }
 
-// Hook to use the context
 export function useCoffeeShop() {
     const context = useContext(CoffeeShopContext);
     if (context === undefined) {

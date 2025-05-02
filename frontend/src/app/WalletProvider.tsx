@@ -37,7 +37,7 @@ function WalletConnectButton() {
 
 export default function WalletProvider({ children }: { children: React.ReactNode }) {
     return (
-        <AptosWalletAdapterProvider>
+        <AptosWalletAdapterProvider network="testnet">
             <div style={{ padding: '1rem', borderBottom: '1px solid #eee' }}>
                 <WalletConnectButton />
             </div>

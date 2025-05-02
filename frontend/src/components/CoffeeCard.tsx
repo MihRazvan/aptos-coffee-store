@@ -16,7 +16,7 @@ interface CoffeeCardProps {
 }
 
 export default function CoffeeCard({ id, name, price, stock, image, isCredit = false }: CoffeeCardProps) {
-    const { purchaseCoffee, isLoading } = useCoffeeShop();
+    const { buyCoffee, isLoading } = useCoffeeShop();
     const { connected } = useWallet();
     const [isPurchasing, setIsPurchasing] = useState(false);
 
@@ -32,7 +32,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
         }
         setIsPurchasing(true);
         try {
-            await purchaseCoffee(id, price);
+            await buyCoffee({ id, name, price, stock, image, available: true });
             toast.success(`Successfully purchased ${name}!`);
         } catch (error) {
             toast.error('Failed to purchase item');
@@ -66,7 +66,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                         </div>
                     )}
                 </div>
-                <div className="text-3xl font-bold mb-2 text-center">550</div>
+                <div className="text-3xl font-bold mb-2 text-center">{stock}</div>
                 <div className="w-full flex justify-between items-center bg-blue-500 text-white rounded px-2 py-1">
                     <span className="font-bold text-lg">${(price / 100).toFixed(2)}</span>
                     <button
