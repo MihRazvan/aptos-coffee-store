@@ -129,7 +129,7 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
                 throw new Error("signAndSubmitTransaction is not a function!");
             }
 
-            const txResult = await signAndSubmitTransaction(payload);
+            const txResult = await signAndSubmitTransaction(payload as any);
             console.log("Transaction result:", txResult);
 
             if (!txResult) {
