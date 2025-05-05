@@ -126,7 +126,7 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
 
             console.log("signAndSubmitTransaction:", signAndSubmitTransaction);
 
-            const txResult = await signAndSubmitTransaction(payload);
+            const txResult = await signAndSubmitTransaction({ data: payload as any });
 
             // 3. PATCH order with transaction hash
             await axios.patch(`${apiUrl}/orders/${order.id}/transaction`, {

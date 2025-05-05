@@ -26,7 +26,7 @@ function WalletConnectButton() {
                 if (petra) {
                     await connect(petra.name);
                 } else {
-                    await connect();
+                    await connect(wallets[0].name);
                 }
             }}
         >
@@ -37,7 +37,7 @@ function WalletConnectButton() {
 
 export default function WalletProvider({ children }: { children: React.ReactNode }) {
     return (
-        <AptosWalletAdapterProvider network="testnet">
+        <AptosWalletAdapterProvider>
             <div style={{ padding: '1rem', borderBottom: '1px solid #eee' }}>
                 <WalletConnectButton />
             </div>
