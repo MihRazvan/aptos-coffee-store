@@ -6,6 +6,7 @@ import CoffeeItem from './CoffeeItem';
 import WithdrawFunds from './WithdrawFunds';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const GAS_BUFFER = 500_000; // 0.001 APT, adjust if needed
 
 export default function AdminDashboard() {
     const { coffees, isLoading, error, fetchCoffees, updateCoffeePrice, updateCoffeeStock, withdrawFunds } = useAdmin();
@@ -14,17 +15,23 @@ export default function AdminDashboard() {
 
     useEffect(() => {
         if (connected && account) {
+            console.log("Wallet connected, fetching coffees...");
             fetchCoffees();
         }
     }, [connected, account, fetchCoffees]);
 
     useEffect(() => {
+        console.log("Fetching shop funds from:", `${apiUrl}/api/shop-funds`);
         fetch(`${apiUrl}/api/shop-funds`)
             .then(res => res.json())
-            .then(data => setShopFunds(data.balance));
+            .then(data => {
+                console.log("Fetched shop funds:", data.balance);
+                setShopFunds(data.balance);
+            });
     }, []);
 
     if (!connected) {
+        console.log("Wallet not connected");
         return (
             <div className="text-center py-12">
                 <h2 className="text-xl font-semibold mb-4">Admin Dashboard</h2>
@@ -34,6 +41,7 @@ export default function AdminDashboard() {
     }
 
     if (isLoading) {
+        console.log("Admin dashboard is loading...");
         return (
             <div className="text-center py-12">
                 <div className="inline-block h-8 w-8 animate-spin rounded-full border-4 border-solid border-blue-500 border-r-transparent"></div>
@@ -43,6 +51,7 @@ export default function AdminDashboard() {
     }
 
     if (error) {
+        console.error("Admin dashboard error:", error);
         return (
             <div className="text-center py-12 text-red-500">
                 <p>Error: {error}</p>
@@ -56,6 +65,10 @@ export default function AdminDashboard() {
         );
     }
 
+    // Calculate max withdrawable and log values
+    const maxWithdrawable = Math.max(Number(shopFunds) - GAS_BUFFER, 0);
+    console.log("shopFunds:", shopFunds, "GAS_BUFFER:", GAS_BUFFER, "maxWithdrawable:", maxWithdrawable);
+
     return (
         <div className="py-8">
             <div className="max-w-4xl mx-auto">
@@ -64,7 +77,19 @@ export default function AdminDashboard() {
                     Connected: {account?.address.toString().slice(0, 6)}...{account?.address.toString().slice(-4)}
                 </p>
                 <h2>Shop Funds: {shopFunds} Octas</h2>
-                <button onClick={() => withdrawFunds(Number(shopFunds))}>Withdraw All</button>
+                <h2>Max Withdrawable: {maxWithdrawable} Octas</h2>
+                <button
+                    onClick={() => {
+                        console.log("Attempting to withdraw:", maxWithdrawable, "Octas");
+                        if (maxWithdrawable > 0) {
+                            withdrawFunds(maxWithdrawable);
+                        } else {
+                            alert("Not enough funds to withdraw after gas buffer!");
+                        }
+                    }}
+                >
+                    Withdraw All
+                </button>
                 <h3 className="text-xl font-semibold mb-4">Manage Coffees</h3>
                 <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200 bg-white rounded shadow">
