@@ -5,6 +5,8 @@ import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import CoffeeItem from './CoffeeItem';
 import WithdrawFunds from './WithdrawFunds';
 
+const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
 export default function AdminDashboard() {
     const { coffees, isLoading, error, fetchCoffees, updateCoffeePrice, updateCoffeeStock, withdrawFunds } = useAdmin();
     const { connected, account } = useWallet();
@@ -17,7 +19,7 @@ export default function AdminDashboard() {
     }, [connected, account, fetchCoffees]);
 
     useEffect(() => {
-        fetch('/api/shop-funds')
+        fetch(`${apiUrl}/api/shop-funds`)
             .then(res => res.json())
             .then(data => setShopFunds(data.balance));
     }, []);

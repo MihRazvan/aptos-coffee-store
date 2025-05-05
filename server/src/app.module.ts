@@ -6,6 +6,8 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoffeesModule } from './coffees/coffees.module';
 import { OrdersModule } from './orders/orders.module';
+import { FundsController } from './funds.controller';
+import { WithdrawController } from './withdraw.controller';
 
 @Module({
   imports: [
@@ -47,7 +49,7 @@ import { OrdersModule } from './orders/orders.module';
     CoffeesModule,
     OrdersModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, FundsController, WithdrawController],
   providers: [AppService],
 })
 export class AppModule { }
