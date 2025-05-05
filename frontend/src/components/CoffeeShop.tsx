@@ -40,6 +40,7 @@ export default function CoffeeShop() {
             <div className="mb-6">
                 <h3 className="text-xl font-bold mb-4">COFFEE MENU</h3>
                 <div className="space-y-4">
+                    console.log("orders before map:", orders);
                     {Array.isArray(coffees) && coffees.map((coffee) => (
                         <CoffeeCard
                             key={coffee.id}

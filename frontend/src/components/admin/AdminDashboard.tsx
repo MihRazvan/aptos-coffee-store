@@ -55,7 +55,7 @@ export default function AdminDashboard() {
 
                 <h3 className="text-xl font-semibold mb-4">Manage Coffees</h3>
                 <div className="space-y-4">
-                    {coffees.map((coffee) => (
+                    {(coffees || []).map((coffee) => (
                         <div key={coffee.id} className="flex items-center justify-between bg-white p-4 rounded-md shadow-sm">
                             <div>
                                 <p className="font-bold">{coffee.name}</p>

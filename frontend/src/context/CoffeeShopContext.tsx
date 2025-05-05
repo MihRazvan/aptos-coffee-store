@@ -6,7 +6,9 @@ import axios from 'axios';
 import toast from 'react-hot-toast';
 
 const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS; // Your Petra wallet address as string
+const adminAddress = process.env.NEXT_PUBLIC_ADMIN_ADDRESS!;
+const moduleName = process.env.NEXT_PUBLIC_MODULE_NAME!;
+const contractName = process.env.NEXT_PUBLIC_CONTRACT_NAME!;
 
 interface Coffee {
     id: number;
@@ -88,11 +90,6 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
             toast.error('Please connect your wallet first');
             return;
         }
-        if (!adminAddress) {
-            console.log("Admin address missing");
-            toast.error('Admin address is not set!');
-            return;
-        }
         if (typeof coffee.price !== 'number') {
             console.log("Invalid coffee price");
             toast.error('Coffee price is invalid!');
@@ -114,19 +111,30 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
                 buyerAddress: account.address.toString(),
             });
 
-            // 2. Prompt wallet to transfer APT to admin
+            // 2. Prompt wallet to call your custom Move contract
             const payload = {
-                type: "entry_function_payload",
-                function: "0x1::coin::transfer",
-                type_arguments: ["0x1::aptos_coin::AptosCoin"],
-                arguments: [adminAddress, coffee.price.toString()],
+                data: {
+                    function: `${adminAddress}::${moduleName}::pay`,
+                    typeArguments: [],
+                    functionArguments: [
+                        adminAddress,
+                        coffee.price.toString(),
+                    ],
+                }
             };
 
             console.log("Payload to signAndSubmitTransaction:", payload);
 
-            console.log("signAndSubmitTransaction:", signAndSubmitTransaction);
+            if (typeof signAndSubmitTransaction !== "function") {
+                throw new Error("signAndSubmitTransaction is not a function!");
+            }
 
-            const txResult = await signAndSubmitTransaction({ data: payload as any });
+            const txResult = await signAndSubmitTransaction(payload);
+            console.log("Transaction result:", txResult);
+
+            if (!txResult) {
+                throw new Error("Transaction result is undefined!");
+            }
 
             // 3. PATCH order with transaction hash
             await axios.patch(`${apiUrl}/orders/${order.id}/transaction`, {
@@ -139,7 +147,7 @@ export function CoffeeShopProvider({ children }: { children: ReactNode }) {
         } catch (err: any) {
             setError(err.message || 'Failed to purchase coffee');
             toast.error('Failed to purchase coffee');
-            console.error(err);
+            console.error("Error in buyCoffee:", err);
         } finally {
             setIsLoading(false);
         }

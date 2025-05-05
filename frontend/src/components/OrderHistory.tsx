@@ -28,6 +28,8 @@ export default function OrderHistory() {
         return <div>Error: Orders data is not an array.</div>;
     }
 
+    console.log("orders before map:", orders);
+
     return (
         <div className="mt-8 p-6 bg-gray-50 rounded-lg">
             <h2 className="text-xl font-semibold mb-4">Your Orders</h2>
