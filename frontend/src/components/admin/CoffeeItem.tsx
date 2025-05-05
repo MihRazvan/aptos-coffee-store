@@ -56,16 +56,15 @@ export default function CoffeeItem({ id, name, price, stock, image, available }:
         <tr className="hover:bg-gray-50">
             <td className="px-6 py-4 whitespace-nowrap">
                 <div className="flex items-center">
-                    <div className="flex-shrink-0 h-10 w-10 relative">
+                    <div className="flex-shrink-0 h-10 w-10">
                         {image ? (
-                            <div className="h-10 w-10 relative">
-                                <Image
-                                    src={`/images/${image}`}
-                                    alt={name}
-                                    fill
-                                    className="object-cover rounded-full"
-                                />
-                            </div>
+                            <Image
+                                src={`/images/${image}`}
+                                alt={name}
+                                width={40}
+                                height={40}
+                                className="object-cover rounded-full"
+                            />
                         ) : (
                             <div className="h-10 w-10 bg-gray-200 rounded-full flex items-center justify-center text-gray-500">
                                 ☕

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import axios from 'axios';
 
@@ -35,7 +35,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const moduleAddress = process.env.NEXT_PUBLIC_MODULE_ADDRESS;
 
-    const fetchCoffees = async () => {
+    const fetchCoffees = useCallback(async () => {
         setIsLoading(true);
         setError(null);
         try {
@@ -47,7 +47,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [apiUrl]);
 
     // Update coffee price in backend only
     const updateCoffeePrice = async (id: number, price: number) => {
