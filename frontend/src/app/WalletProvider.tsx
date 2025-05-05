@@ -4,6 +4,7 @@ import { AptosWalletAdapterProvider, useWallet } from '@aptos-labs/wallet-adapte
 
 function WalletConnectButton() {
     const { connected, account, connect, disconnect, wallets } = useWallet();
+    console.log("Wallet state:", { connected, account, wallets });
 
     if (!wallets || wallets.length === 0) {
         return <span>No Aptos wallets detected. Please install Petra or another wallet.</span>;
