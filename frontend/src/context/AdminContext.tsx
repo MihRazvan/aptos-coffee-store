@@ -109,7 +109,7 @@ export function AdminProvider({ children }: { children: ReactNode }) {
             const response = await signAndSubmitTransaction({
                 sender: account.address,
                 data: {
-                    function: `${moduleAddress}::coffee_shop::withdraw_funds`,
+                    function: `${moduleAddress}::simplified_coffee_shop::withdraw`,
                     functionArguments: [amount]
                 }
             });
