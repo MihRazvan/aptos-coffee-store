@@ -49,30 +49,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Update coffee price in both backend and blockchain
+    // Update coffee price in backend only
     const updateCoffeePrice = async (id: number, price: number) => {
-        if (!account?.address) {
-            setError('Please connect your wallet');
-            return;
-        }
-
         setIsLoading(true);
         setError(null);
-
         try {
-            // 1. Update in backend
             await axios.patch(`${apiUrl}/coffees/${id}`, { price });
-
-            // 2. Update in blockchain
-            const response = await signAndSubmitTransaction({
-                sender: account.address,
-                data: {
-                    function: `${moduleAddress}::coffee_shop::update_coffee_price`,
-                    functionArguments: [id, price]
-                }
-            });
-
-            // 3. Refresh coffees list
             await fetchCoffees();
         } catch (err: any) {
             setError(err.message || 'Failed to update coffee price');
@@ -82,30 +64,12 @@ export function AdminProvider({ children }: { children: ReactNode }) {
         }
     };
 
-    // Update coffee stock in both backend and blockchain
+    // Update coffee stock in backend only
     const updateCoffeeStock = async (id: number, stock: number) => {
-        if (!account?.address) {
-            setError('Please connect your wallet');
-            return;
-        }
-
         setIsLoading(true);
         setError(null);
-
         try {
-            // 1. Update in backend
             await axios.patch(`${apiUrl}/coffees/${id}/stock`, { stock });
-
-            // 2. Update in blockchain
-            const response = await signAndSubmitTransaction({
-                sender: account.address,
-                data: {
-                    function: `${moduleAddress}::coffee_shop::update_coffee_stock`,
-                    functionArguments: [id, stock]
-                }
-            });
-
-            // 3. Refresh coffees list
             await fetchCoffees();
         } catch (err: any) {
             setError(err.message || 'Failed to update coffee stock');
@@ -187,3 +151,5 @@ export function useAdmin() {
     }
     return context;
 }
+
+export { AdminContext };

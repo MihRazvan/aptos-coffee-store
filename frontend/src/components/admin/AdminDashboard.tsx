@@ -1,17 +1,26 @@
 // src/components/admin/AdminDashboard.tsx
-import { useEffect } from 'react';
-import { useAdmin } from '@/context/AdminContext';
+import React, { useContext, useEffect, useState } from 'react';
+import { useAdmin } from '../../context/AdminContext';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
+import CoffeeItem from './CoffeeItem';
+import WithdrawFunds from './WithdrawFunds';
 
 export default function AdminDashboard() {
-    const { coffees, isLoading, error, fetchCoffees } = useAdmin();
+    const { coffees, isLoading, error, fetchCoffees, updateCoffeePrice, updateCoffeeStock, withdrawFunds } = useAdmin();
     const { connected, account } = useWallet();
+    const [shopFunds, setShopFunds] = useState('0');
 
     useEffect(() => {
         if (connected && account) {
             fetchCoffees();
         }
     }, [connected, account, fetchCoffees]);
+
+    useEffect(() => {
+        fetch('/api/shop-funds')
+            .then(res => res.json())
+            .then(data => setShopFunds(data.balance));
+    }, []);
 
     if (!connected) {
         return (
@@ -52,22 +61,26 @@ export default function AdminDashboard() {
                 <p className="mb-6">
                     Connected: {account?.address.toString().slice(0, 6)}...{account?.address.toString().slice(-4)}
                 </p>
-
+                <h2>Shop Funds: {shopFunds} Octas</h2>
+                <button onClick={() => withdrawFunds(Number(shopFunds))}>Withdraw All</button>
                 <h3 className="text-xl font-semibold mb-4">Manage Coffees</h3>
-                <div className="space-y-4">
-                    {(coffees || []).map((coffee) => (
-                        <div key={coffee.id} className="flex items-center justify-between bg-white p-4 rounded-md shadow-sm">
-                            <div>
-                                <p className="font-bold">{coffee.name}</p>
-                                <p>${(coffee.price / 100).toFixed(2)} - Stock: {coffee.stock}</p>
-                            </div>
-                            <div>
-                                <button className="bg-blue-500 text-white px-3 py-1 rounded text-sm mr-2">
-                                    Edit
-                                </button>
-                            </div>
-                        </div>
-                    ))}
+                <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200 bg-white rounded shadow">
+                        <thead>
+                            <tr>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Coffee</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price (APT)</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Available</th>
+                                <th className="px-6 py-3"></th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-gray-200">
+                            {(coffees || []).map((coffee) => (
+                                <CoffeeItem key={coffee.id} {...coffee} />
+                            ))}
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
