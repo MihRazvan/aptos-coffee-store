@@ -16,8 +16,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <Sidebar />
           <main className="flex-1 ml-[260px] p-8">
             <WalletProvider>
-              <div className="bg-red-500 text-white p-4">If this is red, Tailwind works!</div>
-              <button className="btn btn-primary">Test DaisyUI</button>
               {children}
             </WalletProvider>
           </main>

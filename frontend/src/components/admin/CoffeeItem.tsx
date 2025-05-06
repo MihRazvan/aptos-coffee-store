@@ -83,7 +83,7 @@ export default function CoffeeItem({ id, name, price, stock, image, available }:
                         type="number"
                         value={newPrice}
                         onChange={(e) => setNewPrice(parseInt(e.target.value))}
-                        className="border rounded p-1 w-20"
+                        className="input input-bordered input-sm w-24 bg-white text-gray-900"
                         min="1"
                     />
                 ) : (
@@ -96,7 +96,7 @@ export default function CoffeeItem({ id, name, price, stock, image, available }:
                         type="number"
                         value={newStock}
                         onChange={(e) => setNewStock(parseInt(e.target.value))}
-                        className="border rounded p-1 w-20"
+                        className="input input-bordered input-sm w-20 bg-white text-gray-900"
                         min="0"
                     />
                 ) : (
@@ -129,14 +129,14 @@ export default function CoffeeItem({ id, name, price, stock, image, available }:
                         <button
                             onClick={handleSave}
                             disabled={isLoading}
-                            className="text-indigo-600 hover:text-indigo-900 disabled:opacity-50"
+                            className={`btn btn-sm btn-primary ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             Save
                         </button>
                         <button
                             onClick={handleCancel}
                             disabled={isLoading}
-                            className="text-gray-600 hover:text-gray-900 disabled:opacity-50"
+                            className={`btn btn-sm btn-ghost ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             Cancel
                         </button>
@@ -144,7 +144,7 @@ export default function CoffeeItem({ id, name, price, stock, image, available }:
                 ) : (
                     <button
                         onClick={() => setIsEditing(true)}
-                        className="text-indigo-600 hover:text-indigo-900"
+                        className="btn btn-sm btn-link text-indigo-600 hover:text-indigo-900"
                     >
                         Edit
                     </button>

@@ -73,7 +73,7 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
                     disabled={isPurchasing || isLoading || stock <= 0}
                     className="btn btn-primary w-full"
                 >
-                    {isPurchasing ? "Processing..." : "Add to Cart"}
+                    {isPurchasing ? "Processing..." : "Buy"}
                 </button>
             </div>
         </div>
