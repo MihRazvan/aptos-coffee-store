@@ -4,7 +4,6 @@ import { useState } from 'react';
 import { useWallet } from '@aptos-labs/wallet-adapter-react';
 import { useCoffeeShop } from '@/context/CoffeeShopContext';
 import toast from 'react-hot-toast';
-import Image from 'next/image';
 
 interface CoffeeCardProps {
     id: number;
@@ -20,8 +19,10 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
     const { connected } = useWallet();
     const [isPurchasing, setIsPurchasing] = useState(false);
 
+    const imageFile = image?.endsWith('.svg') ? image : `${name.toLowerCase()}.svg`;
+    const placeholderDescription = "A delicious coffee made with care. Enjoy a perfect cup every time!";
+
     const handlePurchaseClick = async () => {
-        console.log("BUY button clicked for coffee", id, name);
         if (!connected) {
             toast.error('Please connect your wallet first');
             return;
@@ -43,45 +44,37 @@ export default function CoffeeCard({ id, name, price, stock, image, isCredit = f
     };
 
     return (
-        <div className="bg-white rounded p-3 shadow-sm">
-            <div className="flex flex-col items-center">
-                <div className="w-20 h-20 relative mb-2">
-                    {isCredit ? (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-teal-500 rounded-full">
-                            <span className="text-white text-2xl font-bold">C</span>
-                        </div>
-                    ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                            {image ? (
-                                <Image
-                                    src={`/images/${image}`}
-                                    alt={name}
-                                    width={80}
-                                    height={80}
-                                    className="object-contain"
-                                />
-                            ) : (
-                                <div className="text-yellow-500 text-4xl">🪙</div>
-                            )}
-                        </div>
-                    )}
+        <div className="card bg-white shadow-xl rounded-xl p-6 flex flex-col items-center min-h-[340px]">
+            <figure className="mb-4">
+                <img
+                    src={`/icons/${imageFile}`}
+                    alt={name}
+                    className="object-contain h-24 w-24"
+                />
+            </figure>
+            <div className="card-body items-center text-center p-0">
+                <h3 className="card-title text-2xl text-royal-blue mb-2">{name}</h3>
+                <div className="text-xs text-dark-gray mb-2 font-medium">
+                    {stock > 0 ? `${stock} in stock` : <span className="text-brand-pink">Out of stock</span>}
                 </div>
-                <div className="text-3xl font-bold mb-2 text-center">{stock}</div>
-                <div className="w-full flex justify-between items-center bg-blue-500 text-white rounded px-2 py-1">
-                    <span className="font-bold text-lg">${(price / 100).toFixed(2)}</span>
-                    <button
-                        onClick={handlePurchaseClick}
-                        disabled={isPurchasing || isLoading || stock <= 0}
-                        className={`py-1 px-2 rounded font-semibold ${stock <= 0
-                            ? 'bg-gray-300 text-gray-600 cursor-not-allowed'
-                            : isPurchasing || isLoading
-                                ? 'bg-green-400 cursor-wait'
-                                : 'bg-green-500 hover:bg-green-600 text-white'
-                            }`}
-                    >
-                        BUY
-                    </button>
+                <div className="text-sm text-dark-gray mb-4">{placeholderDescription}</div>
+                <div className="flex flex-row gap-2 mb-4">
+                    <button className="btn btn-xs btn-outline">Small</button>
+                    <button className="btn btn-xs btn-outline">Medium</button>
+                    <button className="btn btn-xs btn-outline">Large</button>
                 </div>
+                <div className="flex items-center justify-between w-full mb-4">
+                    <span className="text-xl font-bold text-brand-pink">
+                        {(price / 100).toFixed(2)} APT
+                    </span>
+                </div>
+                <button
+                    onClick={handlePurchaseClick}
+                    disabled={isPurchasing || isLoading || stock <= 0}
+                    className="btn btn-primary w-full"
+                >
+                    {isPurchasing ? "Processing..." : "Add to Cart"}
+                </button>
             </div>
         </div>
     );
