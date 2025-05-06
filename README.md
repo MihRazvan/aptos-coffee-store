@@ -1,5 +1,5 @@
 APTOS COFFEE
-![photo_2025-05-06 11 29 04](https://github.com/user-attachments/assets/5be9dcc6-1ba9-481d-b85a-3225f9126bd9)
+<img width="1470" alt="Screenshot 2025-05-06 at 14 40 33" src="https://github.com/user-attachments/assets/bb633e03-c1ac-40a3-a1a7-01be02d1dcd1" />
 
 ---
 
